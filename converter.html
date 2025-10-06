@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Przekształcenie tekstu</title>
+    <link rel="stylesheet" href="style2.css">
+</head>
+<body>
+    <div class="container">
+        <div class="left">
+            <h1>Wklej tekst</h1>
+            <textarea id="inputText" rows="10" cols="50" placeholder="Wklej tekst tutaj"></textarea>
+        </div>
+
+        <div class="center">
+            <p>canteen<br>
+                stołowka<br>
+                classroom<br>
+                klasa<br>
+            </p>
+            <p>canteen,stołowka<br>
+                classroom,klasa
+            </p>
+            <button onclick="przeksztalcTekst()">Przekształć</button>
+            <h3>Liczba wierszy po konwersji: <span id="rowCount">0</span></h3>
+        </div>
+
+        <div class="right">
+            <h2>Wynik:</h2>
+            <textarea id="outputText" rows="10" cols="50" readonly></textarea><br><br>
+            <button onclick="kopiujTekst()">Kopiuj tekst</button>
+        </div>
+    </div>
+
+    <script>
+        function przeksztalcTekst() {
+            var inputText = document.getElementById('inputText').value.trim();
+            var lines = inputText.split('\n').filter(function(line) {
+                return line.trim() !== '';
+            });
+
+            var result = '';
+            for (var i = 0; i < lines.length; i += 2) {
+                if (i + 1 < lines.length) {
+                    result += lines[i] + ',' + lines[i + 1] + '\n';
+                } else {
+                    result += lines[i] + '\n';
+                }
+            }
+
+            document.getElementById('outputText').value = result.trim();
+
+            var rowCount = result.trim().split('\n').length;
+            document.getElementById('rowCount').textContent = rowCount;
+        }
+
+        function kopiujTekst() {
+            var outputText = document.getElementById('outputText');
+            outputText.select();
+            outputText.setSelectionRange(0, 99999); // Dla mobilnych urządzeń
+
+            try {
+                var successful = document.execCommand('copy');
+                var msg = successful ? 'skopiowano' : 'nie udało się skopiować';
+                alert('Tekst ' + msg + ' do schowka');
+            } catch (err) {
+                alert('Wystąpił błąd przy kopiowaniu tekstu.');
+            }
+        }
+    </script>
+</body>
+</html>

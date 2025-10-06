@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiszki Angielski - Quiz</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Quiz 🧠</h1>
+        
+        <div id="quizArea" class="card quiz-card">
+            <h2>Zaliczone słówka: <span id="score">0</span> / <span id="total">0</span></h2>
+            
+            <p>Przetłumacz słowo:</p>
+            <div id="promptWord" class="prompt"></div>
+            
+            <input type="text" id="answerInput" placeholder="Wpisz tłumaczenie i naciśnij Enter">
+            
+            <div id="feedback"></div>
+            <button id="acceptBtn" class="button hidden">Zalicz</button>
+        </div>
+        
+        <div id="quizEnd" class="card hidden">
+            <h2>Quiz zakończony! 🎉</h2>
+            <p>Świetna robota! Udało Ci się poprawnie odpowiedzieć na wszystkie słówka.</p>
+            <p class="final-score" id="finalScore"></p>
+            <a href="index.html" class="button">Wróć do strony głównej</a>
+        </div>
+    </div>
+
+    <script>
+        // === ELEMENTY DOM ===
+        const scoreEl = document.getElementById('score');
+        const totalEl = document.getElementById('total');
+        const promptWordEl = document.getElementById('promptWord');
+        const answerInput = document.getElementById('answerInput');
+        const feedbackEl = document.getElementById('feedback');
+        const acceptBtn = document.getElementById('acceptBtn');
+        const quizArea = document.getElementById('quizArea');
+        const quizEnd = document.getElementById('quizEnd');
+        const finalScoreEl = document.getElementById('finalScore');
+        
+        // === ZMIENNE QUIZU ===
+        let allWords = [];
+        let wordsToQuiz = [];
+        let currentWord = null;
+        let correctAnswers = 0;
+
+        // === FUNKCJE ===
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function loadNextWord() {
+            if (wordsToQuiz.length === 0) {
+                endQuiz();
+                return;
+            }
+
+            currentWord = wordsToQuiz[0];
+            promptWordEl.textContent = currentWord.original;
+
+            answerInput.value = '';
+            feedbackEl.innerHTML = '';
+            acceptBtn.classList.add('hidden');
+            answerInput.disabled = false;
+            answerInput.focus();
+        }
+        
+        function checkAnswer() {
+            if (!currentWord) return;
+
+            const userAnswer = answerInput.value.trim().toLowerCase();
+            const correctAnswer = currentWord.translation.trim().toLowerCase();
+
+            answerInput.disabled = true;
+
+            if (userAnswer === correctAnswer) {
+                wordsToQuiz.shift();
+                correctAnswers++;
+                scoreEl.textContent = correctAnswers;
+                
+                feedbackEl.textContent = '✅ Dobrze!';
+                feedbackEl.className = 'correct';
+                
+                setTimeout(loadNextWord, 1000);
+
+            } else {
+                feedbackEl.innerHTML = `❌ Błąd! Poprawna odpowiedź: <strong>${currentWord.translation}</strong>. <br><small>Naciśnij Enter, aby spróbować później, lub "Zalicz".</small>`;
+                feedbackEl.className = 'incorrect';
+                
+                acceptBtn.classList.remove('hidden');
+                
+                answerInput.disabled = false;
+                answerInput.focus();
+            }
+        }
+        
+        function endQuiz() {
+            quizArea.classList.add('hidden');
+            quizEnd.classList.remove('hidden');
+            finalScoreEl.textContent = `${correctAnswers} / ${allWords.length}`;
+        }
+        
+        // === INICJALIZACJA QUIZU ===
+        document.addEventListener('DOMContentLoaded', () => {
+            const storedWords = localStorage.getItem('flashcards');
+            if (storedWords) {
+                allWords = JSON.parse(storedWords);
+                wordsToQuiz = [...allWords];
+            }
+
+            if (allWords.length === 0) {
+                alert("Brak słówek do nauki! Wróć na stronę główną, aby je dodać.");
+                window.location.href = 'index.html';
+                return;
+            }
+
+            shuffleArray(wordsToQuiz);
+            totalEl.textContent = allWords.length;
+            loadNextWord();
+        });
+
+        // === EVENT LISTENERS ===
+
+        answerInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                if (feedbackEl.innerHTML !== '' && !acceptBtn.classList.contains('hidden')) {
+                    // Przesuń słowo na koniec kolejki
+                    const incorrectWord = wordsToQuiz.shift();
+                    wordsToQuiz.push(incorrectWord);
+                    // KLUCZOWA ZMIANA: Usunięto ponowne tasowanie w tym miejscu!
+                    loadNextWord();
+                } else {
+                    checkAnswer();
+                }
+            }
+        });
+
+        acceptBtn.addEventListener('click', () => {
+            wordsToQuiz.shift();
+            correctAnswers++;
+            scoreEl.textContent = correctAnswers;
+            loadNextWord();
+        });
+    </script>
+</body>
+</html>

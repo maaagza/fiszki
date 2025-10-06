@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiszki Angielski - Ustawienia</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Fiszki do Nauki Angielskiego</h1>
+
+        <div class="card">
+            <h2>Opcje i Start</h2>
+            <button id="swapBtn">Zamień języki</button>
+            <hr>
+            <button id="startQuizBtn" disabled>Rozpocznij Quiz!</button>
+        </div>
+
+        <div class="card">
+            <h2>Wczytaj słówka z pliku .txt</h2>
+            <input type="file" id="fileInput" accept=".txt">
+            <button id="loadFileBtn">Wczytaj słowa z pliku</button>
+        </div>
+
+        <div class="card">
+            <h2>Lista słów (<span id="wordCount">0</span>)</h2>
+            <div id="wordList">
+                <p>Brak wczytanych słów.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Dodaj słówko ręcznie</h2>
+            <input type="text" id="wordInput" placeholder="Słowo po angielsku">
+            <input type="text" id="translationInput" placeholder="Tłumaczenie po polsku">
+            <button id="addWordBtn">Dodaj</button>
+        </div>
+
+        <div class="card">
+            <a href="converter.html">Konwerter</a>
+        </div>
+    </div>
+
+    <script>
+        // === ELEMENTY DOM ===
+        const fileInput = document.getElementById('fileInput');
+        const loadFileBtn = document.getElementById('loadFileBtn');
+        const wordInput = document.getElementById('wordInput');
+        const translationInput = document.getElementById('translationInput');
+        const addWordBtn = document.getElementById('addWordBtn');
+        const swapBtn = document.getElementById('swapBtn');
+        const startQuizBtn = document.getElementById('startQuizBtn');
+        const wordCount = document.getElementById('wordCount');
+        const wordListDiv = document.getElementById('wordList');
+
+        // === ZMIENNA PRZECHOWUJĄCA SŁÓWKA ===
+        let words = [];
+
+        // === FUNKCJE ===
+
+        /** Aktualizuje widok listy słów oraz licznik */
+        function updateWordList() {
+            wordListDiv.innerHTML = ''; // Wyczyść listę
+            if (words.length === 0) {
+                wordListDiv.innerHTML = '<p>Brak wczytanych słów.</p>';
+                startQuizBtn.disabled = true; // Zablokuj przycisk quizu
+            } else {
+                words.forEach((pair, index) => {
+                    const wordElement = document.createElement('div');
+                    wordElement.className = 'word-pair';
+                    wordElement.textContent = `${index + 1}. ${pair.original} - ${pair.translation}`;
+                    wordListDiv.appendChild(wordElement);
+                });
+                startQuizBtn.disabled = false; // Odblokuj przycisk quizu
+            }
+            wordCount.textContent = words.length;
+        }
+
+        /** Dodaje parę słów do tablicy */
+        function addWordPair(original, translation) {
+            if (original && translation) {
+                words.push({ original: original.trim(), translation: translation.trim() });
+            }
+        }
+
+        // === EVENT LISTENERS (NASŁUCHIWANIE NA ZDARZENIA) ===
+
+        // Wczytywanie z pliku
+        loadFileBtn.addEventListener('click', () => {
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Proszę wybrać plik!');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const fileContent = event.target.result;
+                const lines = fileContent.split('\n');
+                
+                words = []; // Wyczyść starą listę przed wczytaniem nowej
+                lines.forEach(line => {
+                    const parts = line.split(',');
+                    if (parts.length === 2) {
+                        addWordPair(parts[0], parts[1]);
+                    }
+                });
+                updateWordList();
+            };
+            reader.readAsText(file);
+        });
+
+        // Dodawanie ręczne
+        addWordBtn.addEventListener('click', () => {
+            const newWord = wordInput.value;
+            const newTranslation = translationInput.value;
+            if (newWord && newTranslation) {
+                addWordPair(newWord, newTranslation);
+                updateWordList();
+                wordInput.value = '';
+                translationInput.value = '';
+                wordInput.focus();
+            } else {
+                alert('Proszę wypełnić oba pola!');
+            }
+        });
+
+        // Zamiana języków
+        swapBtn.addEventListener('click', () => {
+            if (words.length === 0) {
+                alert('Brak słów do zamiany!');
+                return;
+            }
+            words = words.map(pair => ({
+                original: pair.translation,
+                translation: pair.original
+            }));
+            updateWordList();
+        });
+
+        // Rozpoczęcie quizu
+        startQuizBtn.addEventListener('click', () => {
+            // Zapisz słówka w pamięci przeglądarki, aby były dostępne na stronie quiz.html
+            localStorage.setItem('flashcards', JSON.stringify(words));
+            // Przejdź na stronę quizu
+            window.location.href = 'quiz.html';
+        });
+
+        // Inicjalizacja widoku
+        updateWordList();
+
+
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("service-worker.js")
+            .then(() => console.log("Service Worker zarejestrowany"))
+            .catch(err => console.error("Błąd rejestracji Service Workera:", err));
+        }
+    </script>
+</body>
+</html>
