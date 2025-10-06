@@ -34,6 +34,12 @@
         </div>
 
         <div class="card">
+            <h2>Wklej słówka z tekstu</h2>
+            <textarea id="textInput" placeholder="Wklej tutaj tekst w formacie: słowo,tłumaczenie (każda para w nowej linii)" rows="6" style="width: 100%; background-color: #1e1e1e; resize: none"></textarea>
+            <button id="loadTextBtn">Wczytaj z tekstu</button>
+        </div>
+
+        <div class="card">
             <h2>Dodaj słówko ręcznie</h2>
             <input type="text" id="wordInput" placeholder="Słowo po angielsku">
             <input type="text" id="translationInput" placeholder="Tłumaczenie po polsku">
@@ -113,6 +119,29 @@
             };
             reader.readAsText(file);
         });
+
+        // Wczytywanie z wklejonego tekstu
+        const textInput = document.getElementById('textInput');
+        const loadTextBtn = document.getElementById('loadTextBtn');
+
+        loadTextBtn.addEventListener('click', () => {
+           const content = textInput.value.trim();
+          if (!content) {
+              alert('Proszę wkleić tekst!');
+              return;
+          }
+
+          const lines = content.split('\n');
+          lines.forEach(line => {
+             const parts = line.split(',');
+             if (parts.length === 2) {
+                 addWordPair(parts[0], parts[1]);
+             }
+           });
+
+    updateWordList();
+    textInput.value = ''; // wyczyść po wczytaniu
+});
 
         // Dodawanie ręczne
         addWordBtn.addEventListener('click', () => {
