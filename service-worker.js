@@ -1,12 +1,11 @@
 const CACHE_NAME = "quiz-app-v1";
 const FILES_TO_CACHE = [
-  "/",
-  "/index.html",
-  "/quiz.html",
-  "/style.css",
-  "/style2.css",
-  "/converter.html",
-  "/manifest.json"
+  "index.html",
+  "quiz.html",
+  "style.css",
+  "style2.css",
+  "converter.html",
+  "manifest.json"
 ];
 
 // Instalacja – zapisuje pliki do cache
