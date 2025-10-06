@@ -85,15 +85,26 @@
             answerInput.disabled = true;
 
             if (userAnswer === correctAnswer) {
-                wordsToQuiz.shift();
-                correctAnswers++;
-                scoreEl.textContent = correctAnswers;
-                
-                feedbackEl.textContent = '✅ Dobrze!';
-                feedbackEl.className = 'correct';
-                
-                setTimeout(loadNextWord, 1000);
+            wordsToQuiz.shift();
+            correctAnswers++;
+            scoreEl.textContent = correctAnswers;
 
+            feedbackEl.textContent = '✅ Dobrze!';
+            feedbackEl.className = 'correct';
+
+            // Najpierw natychmiastowe odblokowanie pola
+            answerInput.disabled = false;
+
+            // iOS hack – skup się od razu, zanim klawiatura zniknie
+            answerInput.focus({ preventScroll: true });
+
+            // Teraz dopiero po chwili zmień słowo
+            setTimeout(() => {
+                loadNextWord();
+
+                // Dodatkowy focus po wczytaniu nowego słowa (dla Androida / desktopu)
+                setTimeout(() => answerInput.focus({ preventScroll: true }), 50);
+            }, 1000);
             } else {
                 feedbackEl.innerHTML = `❌ Błąd! Poprawna odpowiedź: <strong>${currentWord.translation}</strong>. <br><small>Naciśnij Enter, aby spróbować później, lub "Zalicz".</small>`;
                 feedbackEl.className = 'incorrect';
